@@ -1,0 +1,4 @@
+Balance: 500.0
+Transactions:
+2025-01-27 06:39:25, Deposit, 1000.00 PHP
+2025-01-27 06:39:41, Withdraw, 500.00 PHP
