@@ -6,15 +6,16 @@ import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class Home extends JFrame {
-    private static final Color LABEL_COLOR = new Color(47, 48, 132);
-    private static final Color BUTTON_COLOR = new Color(47, 48, 132);
-    private static final Color BACKGROUND_COLOR = new Color(230, 230, 250);
-    private static final int FRAME_WIDTH = 1000; // Reduced width
-    private static final int FRAME_HEIGHT = 720;
+    Color LABEL_COLOR = new Color(47, 48, 132);
+    Color BUTTON_COLOR = new Color(47, 48, 132);
+    Color BACKGROUND_COLOR = new Color(230, 230, 250);
+    int FRAME_WIDTH = 1000; // Reduced width
+    int FRAME_HEIGHT = 720;
     private String username;
     private double balance = 0.0;
     private DefaultTableModel transactionModel;
@@ -45,6 +46,13 @@ public class Home extends JFrame {
         titleLabel.setBounds(20, 20, 200, 40);
         topPanel.add(titleLabel);
 
+        // Welcome message
+        JLabel welcomeLabel = new JLabel("Welcome, " + username);
+        welcomeLabel.setFont(new Font("Arial", Font.PLAIN, 18));
+        welcomeLabel.setForeground(LABEL_COLOR);
+        welcomeLabel.setBounds(20, 50, 300, 30); // Adjusted position
+        topPanel.add(welcomeLabel);
+
         JButton logoutButton = new JButton("Log Out");
         logoutButton.setBackground(BUTTON_COLOR);
         logoutButton.setForeground(Color.WHITE);
@@ -63,7 +71,7 @@ public class Home extends JFrame {
         add(balanceLabel);
 
         // Amount label
-        JLabel amountLabel = new JLabel(String.format("%.2f PHP", balance));
+        JLabel amountLabel = new JLabel(formatCurrency(balance) + " PHP");
         amountLabel.setFont(new Font("Arial", Font.BOLD, 48)); // Larger font size
         amountLabel.setForeground(LABEL_COLOR);
         amountLabel.setBounds(400, 190, 400, 50); // Positioned below the balance label
@@ -84,7 +92,7 @@ public class Home extends JFrame {
                         String securityPin = JOptionPane.showInputDialog(this, "Enter Security Pin:");
                         if (securityPin != null && validateSecurityPin(securityPin)) {
                             balance += amount;
-                            amountLabel.setText(String.format("%.2f PHP", balance)); // Update amount label
+                            amountLabel.setText(formatCurrency(balance) + " PHP"); // Update amount label
                             addTransaction("Deposit", amount);
                             saveBalanceAndTransactions();
                             JOptionPane.showMessageDialog(this, "Deposited: " + amountStr + " PHP");
@@ -116,7 +124,7 @@ public class Home extends JFrame {
                         String securityPin = JOptionPane.showInputDialog(this, "Enter Security Pin:");
                         if (securityPin != null && validateSecurityPin(securityPin)) {
                             balance -= amount;
-                            amountLabel.setText(String.format("%.2f PHP", balance)); // Update amount label
+                            amountLabel.setText(formatCurrency(balance) + " PHP"); // Update amount label
                             addTransaction("Withdraw", amount);
                             saveBalanceAndTransactions();
                             JOptionPane.showMessageDialog(this, "Withdrawn: " + amountStr + " PHP");
@@ -157,7 +165,7 @@ public class Home extends JFrame {
 
     private void addTransaction(String type, double amount) {
         String date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-        transactionModel.addRow(new Object[]{date, type, String.format("%.2f PHP", amount)});
+        transactionModel.addRow(new Object[]{date, type, formatCurrency(amount) + " PHP"});
     }
 
     private void saveBalanceAndTransactions() {
@@ -178,6 +186,7 @@ public class Home extends JFrame {
         saveBalanceAndTransactions();
         JOptionPane.showMessageDialog(this, "Data saved successfully.", "Info", JOptionPane.INFORMATION_MESSAGE);
         dispose();
+        new Login();
     }
 
     private void loadBalanceAndTransactions() {
@@ -203,14 +212,13 @@ public class Home extends JFrame {
         }
     }
 
-    private boolean validateSecurityPin(String securityPin)
-    {
+    private boolean validateSecurityPin(String securityPin) {
         try (BufferedReader reader = new BufferedReader(new FileReader("users.txt"))) {
             String line;
-            boolean foundUser  = false;
+            boolean foundUser   = false;
             while ((line = reader.readLine()) != null) {
                 if (line.contains("Username: " + username)) {
-                    foundUser  = true; // User found
+                    foundUser   = true; // User found
                     // Read the next lines to find the security pin
                     while ((line = reader.readLine()) != null) {
                         if (line.contains("Security Pin: " + securityPin)) {
@@ -228,7 +236,14 @@ public class Home extends JFrame {
         return false; // Invalid security pin
     }
 
+    private String formatCurrency(double amount) {
+        NumberFormat formatter = NumberFormat.getInstance();
+        formatter.setMinimumFractionDigits(2); 
+        formatter.setMaximumFractionDigits(2);
+        return formatter.format(amount);
+    }
+
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new Home("testUser ")); // Replace "testUser " with actual username
+        SwingUtilities.invokeLater(() -> new Home("testUser  ")); // Replace "testUser  " with actual username
     }
 }
